@@ -1,0 +1,114 @@
+#include <LPC21xx.H>
+
+#define LED0 0x00010000 
+#define LED1 0x00020000  
+#define LED2 0x00040000 
+#define LED3 0x00080000 
+
+#define S0 0x10
+#define S2 0x20
+#define S1 0x40
+#define S3 0x80
+
+static unsigned int uiLedIndeksStatic;
+
+void LedInit(){
+	IO0DIR = (IO1DIR | LED0 | LED1 | LED2| LED3);
+	IO1SET = LED0;
+	uiLedIndeksStatic = 0;
+}
+
+void KeybordInit(){
+	IO0DIR = IO0DIR | ~(S0 | S1 | S2 | S3);
+}
+
+enum KeybordState {BUTTON_0, BUTTON_1, BUTTON_2, BUTTON_3};
+
+
+enum KeybordState eKeybordRead(){
+	enum KeybordState myState;
+	
+		if((IO0PIN & S0) == 0){
+			myState = BUTTON_0;
+		}
+		
+		else if((IO0PIN & S2) == 0){
+			myState = BUTTON_2;
+		}
+		
+		else if((IO0PIN & S1) == 0){
+			myState = BUTTON_1;
+		}
+		
+		else if((IO0PIN & S3) == 0){
+			myState = BUTTON_3;
+		}
+	
+	return myState;
+}	
+	
+
+
+void LedOn(unsigned int uiLedIndeks){
+
+	uiLedIndeksStatic = uiLedIndeks;
+		switch(uiLedIndeks){
+			case 0: IO1SET = LED0; break;
+			case 1: IO1SET = LED1; break;
+			case 2: IO1SET = LED2; break;
+			case 3: IO1SET = LED3; break;		
+			default: IO1CLR = LED0 | LED1 | LED2| LED3; break;			
+		}
+		
+	}
+	
+enum StepDirection {LEFT, RIGHT};
+enum StepDirection eLedStep(enum StepDirection myDirection){
+	
+	switch(myDirection){
+	
+		case LEFT:
+			IO1CLR = LED0 | LED1 | LED2| LED3;
+			LedOn((uiLedIndeksStatic+1)%4);
+			break;
+		
+		case RIGHT:
+			IO1CLR = LED0 | LED1 | LED2| LED3;
+			LedOn((uiLedIndeksStatic-1)%4);
+			break;
+	}
+	
+	return myDirection;
+}
+
+void LedStepLeft(void){
+	eLedStep(LEFT);
+}
+
+void LedStepRight(void){
+	eLedStep(RIGHT);
+}
+
+int main(){
+	
+	LedInit();
+	KeybordInit();
+	
+	while(1){
+		
+			switch(eKeybordRead()){
+				case BUTTON_1: 
+						LedStepLeft();
+						break;
+				
+				case BUTTON_2:
+						LedStepRight();
+						break;
+				
+				default: break;
+			}
+	}
+}
+
+
+
