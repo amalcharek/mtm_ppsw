@@ -1,3 +1,4 @@
+//testowanie
 #include <LPC21xx.H>
 
 #define LED0_bm 0x00010000
